@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <opencv2/opencv.hpp>
 #include <opencv2/opencv_modules.hpp>
+#include "GCO\GCoptimization.h"
+
 
 using namespace cv;
 using namespace std;
@@ -51,11 +53,9 @@ void ShowImage(Mat image, string windowName){
 	waitKey();
 }
 
-void LoadImage(string path = "C:\\HuaWeiImage\\华为拍照_校正\\华为拍照_校正\\正常光照\\u_60.jpg"){
+void LoadImage(string path = "C:\\HuaWeiImage\\华为拍照_校正\\华为拍照_校正\\正常光照\\u_90.jpg"){
 	imageOriginal = imread(path);
 	ShowImage(imageOriginal, "Original");
-	w = imageOriginal.cols;
-	h = imageOriginal.rows;
 	printf("%dx%d\n", w, h);
 
 }
@@ -99,7 +99,7 @@ void DetectContours(double thresh = 100){
 			drawContours(imageOutput, contours, i, Scalar(0, 255, 0), 2);
 		}
 	}
-	ShowImage(imageOutput, "Contours");
+	//ShowImage(imageOutput, "Contours");
 }
 
 void DetectLines(){
@@ -169,6 +169,104 @@ int Rgb2Gray(GraphPixel p){
 	return (int)(p.r * 0.299 + p.g * 0.587 + p.b * 0.114);
 }
 
+void ReadImage(){
+	FILE *fp;
+
+	fopen_s(&fp, "ImageOutput.txt", "r");
+
+	fscanf_s(fp, "%d %d", &h, &w);
+	for (int i = 0; i < h; i++)
+	for (int j = 0; j < w; j++){
+		fscanf_s(fp, "%d %d %d", &g[i][j].r, &g[i][j].g, &g[i][j].b);
+	}
+	for (int i = 0; i < h; i++)
+	for (int j = 0; j < w; j++){
+		fscanf_s(fp, "%d", &g[i][j].edge);
+	}
+
+	fclose(fp);
+}
+
+int max(int x, int y, int z){
+	return max(max(x, y), z);
+}
+
+int ComputeCost(int i, int j, int l){
+	int cost = 0;
+	GraphPixel p = g[i][j];
+	int gray = Rgb2Gray(p);
+	if (l == 0){
+		cost = max(gray - 10, 0) + 80;
+	}
+	else
+	if (l == 1){
+		cost = max(210 - gray, 0) + 10;
+	}
+	else
+	if (l == 2){
+		cost = max(max(p.r, p.g, p.b), max(255 - p.r, 255 - p.g, 255 - p.b)) * 2 / 3;
+	}
+	else
+	if (l == 3){
+		cost = p.edge ? 0 : 300;
+	}
+	else
+	{
+		cost = 0;
+	}
+	return cost;
+}
+
+void MultiLabelGraphCut(){
+	ReadImage();
+	int width = w;
+	int height = h;
+	int numPixels = w * h;
+	int numLabels = 4;
+
+	int *result = new int[numPixels];
+
+	GCoptimizationGridGraph *gc = new GCoptimizationGridGraph(width, height, numLabels);
+	for (int l = 0; l < numLabels; l++)
+	for (int i = 0; i < height; i++)
+	for (int j = 0; j < width; j++){
+		gc->setDataCost(i * width + j, l, ComputeCost(i, j, l));
+	}
+	int varity = 2;
+	gc->setSmoothCost(0, 1, 100 / varity);
+	gc->setSmoothCost(1, 0, 100 / varity);
+	gc->setSmoothCost(0, 2, 100 / varity);
+	gc->setSmoothCost(2, 0, 100 / varity);
+	gc->setSmoothCost(1, 2, 10 / varity);
+	gc->setSmoothCost(2, 1, 10 / varity);
+
+	gc->setSmoothCost(0, 3, 100 / varity);
+	gc->setSmoothCost(3, 0, 100 / varity);
+	gc->setSmoothCost(1, 3, 100 / varity);
+	gc->setSmoothCost(3, 1, 100 / varity);
+	gc->setSmoothCost(2, 3, 6 / varity);
+	gc->setSmoothCost(3, 2, 6 / varity);
+
+
+	//gc->setLabelCost(0);
+	printf("before: %d\n", gc->compute_energy());
+	gc->swap();
+	printf("after: %d\n", gc->compute_energy());
+	FILE *fout;
+	fopen_s(&fout, "ImageLabel.txt", "w");
+	for (int i = 0; i < numPixels; i++){
+		result[i] = gc->whatLabel(i);
+		fprintf_s(fout, "%d\n", result[i]);
+	}
+	fclose(fout);
+
+	delete[] result;
+}
+
+
+
+
+
 #pragma endregion
 
 int main(){
@@ -179,10 +277,10 @@ int main(){
 		LoadImage();
 		Preprocess();
 		DetectContours();
-		DetectLines();
+		//DetectLines();
 
 		ImageOutput();
-
+		MultiLabelGraphCut();
 		ImageLabelInput();
 
 		waitKey();

@@ -1,0 +1,68 @@
+# depslib dependency file v1.0
+1412326642 source:c:\huaweiimage\gco-v3\gco\example.cpp
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<string.h>
+	<time.h>
+	"GCoptimization.h"
+
+1389757952 c:\huaweiimage\gco-v3\gco\gcoptimization.h
+	<cstddef>
+	"energy.h"
+	"graph.cpp"
+	"maxflow.cpp"
+	<ctime>
+
+1389757952 c:\huaweiimage\gco-v3\gco\energy.h
+	<stdio.h>
+	"energy.h"
+	<assert.h>
+	"graph.h"
+
+1389757952 c:\huaweiimage\gco-v3\gco\graph.h
+	<string.h>
+	"block.h"
+	<assert.h>
+
+1389757952 c:\huaweiimage\gco-v3\gco\block.h
+	"block.h"
+	<stdlib.h>
+
+1389757952 c:\huaweiimage\gco-v3\gco\graph.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"graph.h"
+
+1389757952 c:\huaweiimage\gco-v3\gco\maxflow.cpp
+	<stdio.h>
+	"graph.h"
+
+1389757952 source:c:\huaweiimage\gco-v3\gco\gcoptimization.cpp
+	<mex.h>
+	"GCoptimization.h"
+	"LinkedBlockList.h"
+	<stdio.h>
+	<stdlib.h>
+	<vector>
+	<algorithm>
+	<windows.h>
+
+1389757952 c:\huaweiimage\gco-v3\gco\linkedblocklist.h
+
+1389757952 source:c:\huaweiimage\gco-v3\gco\graph.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"graph.h"
+
+1389757952 source:c:\huaweiimage\gco-v3\gco\linkedblocklist.cpp
+	"LinkedBlockList.h"
+	<stdio.h>
+	<stdlib.h>
+
+1389757952 source:c:\huaweiimage\gco-v3\gco\maxflow.cpp
+	<stdio.h>
+	"graph.h"
+
